@@ -1,44 +1,29 @@
 import * as faceapi from "face-api.js";
 
+// --- Initialization ---
 async function initFaceAuth() {
   await faceapi.nets.tinyFaceDetector.loadFromUri("/models/tiny_detector");
   await faceapi.nets.faceRecognitionNet.loadFromUri("/models/face_recognition");
   await faceapi.nets.faceLandmark68Net.loadFromUri("/models/face_landmark68");
 }
 
-async function startCamera(videoEl) {
-  const constraints = {
-    video: {
-      facingMode: "user",
-    },
-  };
+// --- Camera setup ---
+async function startCamera(video) {
+  try {
+    // console.log("Requesting camera access...");
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    //  console.log("Camera stream obtained:", stream);
 
-  // Detect ambient light
-  if ("AmbientLightSensor" in window) {
-    try {
-      const sensor = new AmbientLightSensor();
-      sensor.onreading = () => {
-        if (sensor.illuminance < 20) {
-          constraints.video.torch = true; // request torch if supported
-        }
-      };
-      sensor.start();
-    } catch (e) {
-      console.warn("AmbientLightSensor not available", e);
-    }
-  }
-
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  videoEl.srcObject = stream;
-
-  // Try enabling torch manually if supported
-  const track = stream.getVideoTracks()[0];
-  const capabilities = track.getCapabilities();
-  if (capabilities.torch) {
-    track.applyConstraints({ advanced: [{ torch: true }] });
+    video.srcObject = stream;
+    await video.play();
+    // console.log("Video playback started.");
+  } catch (err) {
+    console.error("Camera error:", err);
+    alert("Unable to access camera. Please check permissions.");
   }
 }
 
+// --- Capture face descriptor ---
 async function captureFace(videoEl) {
   const detection = await faceapi
     .detectSingleFace(videoEl, new faceapi.TinyFaceDetectorOptions())
@@ -47,17 +32,11 @@ async function captureFace(videoEl) {
   return detection ? detection.descriptor : null;
 }
 
-// Example: store descriptor in localStorage for demo
+// --- Storage helpers ---
 function saveUserFace(descriptor) {
   localStorage.setItem("userFace", JSON.stringify(Array.from(descriptor)));
 }
 
-// function matchFace(descriptor) {
-//   const saved = JSON.parse(localStorage.getItem("userFace"));
-//   if (!saved) return false;
-//   const distance = faceapi.euclideanDistance(saved, descriptor);
-//   return distance < 0.6; // threshold
-// }
 function getUserFace() {
   const data = localStorage.getItem("userFace");
   try {
@@ -69,18 +48,49 @@ function getUserFace() {
   }
 }
 
+// --- Matching ---
 function matchFace(desc) {
   const stored = getUserFace();
   if (!stored) return false;
-  try {
-    const distance = faceapi.euclideanDistance(desc, stored);
-    return distance < 0.6; // threshold
-  } catch (e) {
-    console.error("Descriptor mismatch, clearing stored face.");
-    localStorage.removeItem("userFace");
+  const distance = faceapi.euclideanDistance(desc, stored);
+  return distance < 0.4; // adjust threshold as needed
+}
 
+// --- Registration flow ---
+async function registerFace(videoEl) {
+  const descriptor = await captureFace(videoEl);
+  if (!descriptor) {
+    alert("No face detected. Please try again.");
+    return false;
+  }
+  saveUserFace(descriptor);
+  alert("Face registered successfully!");
+  return true;
+}
+
+// --- Authentication flow ---
+async function authenticate(videoEl) {
+  const descriptor = await captureFace(videoEl);
+  if (!descriptor) {
+    alert("No face detected.");
+    return false;
+  }
+  if (matchFace(descriptor)) {
+    alert("Access granted!");
+    return true;
+  } else {
+    alert("Access denied. Face does not match. Or, try registering your face.");
     return false;
   }
 }
 
-export { initFaceAuth, captureFace, startCamera, saveUserFace, matchFace };
+export {
+  initFaceAuth,
+  startCamera,
+  captureFace,
+  registerFace,
+  authenticate,
+  saveUserFace,
+  getUserFace,
+  matchFace,
+};

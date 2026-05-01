@@ -1,11 +1,14 @@
 import "./style.css";
 import m from "mithril";
 import {
+  authenticate,
   initFaceAuth,
   startCamera,
   saveUserFace,
   captureFace,
   matchFace,
+  getUserFace,
+  registerFace,
 } from "./faceAuth";
 import {
   getAllEntries,
@@ -67,12 +70,6 @@ function initSession() {
 }
 initSession();
 
-// function loginUser() {
-//   state.loggedIn = true;
-//   console.log("LoggedIn? ", state.loggedIn);
-//   localStorage.setItem("loginTime", Date.now());
-//   m.redraw();
-// }
 function loginUser(video) {
   state.loggedIn = true;
   localStorage.setItem("loginTime", Date.now());
@@ -84,12 +81,6 @@ function loginUser(video) {
   m.redraw();
 }
 
-// function logoutUser() {
-//   state.loggedIn = false;
-//   state.entries = {};
-//   localStorage.removeItem("loginTime");
-//   m.redraw();
-// }
 function logoutUser() {
   state.loggedIn = false;
   state.entries = {};
@@ -139,12 +130,17 @@ const Calendar = {
     checkAutoLogout();
     if (!state.loggedIn) return null;
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date();
+    const todayY = today.getFullYear();
+    const todayM = today.getMonth();
+    const todayD = today.getDate();
+
     const daysInMonth = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth() + 1,
+      state.currentYear,
+      state.currentMonth + 1,
       0,
     ).getDate();
+
     const firstDay = new Date(
       state.currentYear,
       state.currentMonth,
@@ -155,6 +151,7 @@ const Calendar = {
       { length: daysInMonth },
       (_, i) => new Date(state.currentYear, state.currentMonth, i + 1),
     );
+
     const monthName = new Date(
       state.currentYear,
       state.currentMonth,
@@ -191,10 +188,9 @@ const Calendar = {
         ),
       ),
       m(".calendar", [
-        // empty slots before first day
-        ...Array.from({ length: firstDay }, () => m(".day")),
+        // invisible spacers before the first day
+        ...Array.from({ length: firstDay }, () => m(".spacer")),
         ...days.map((d) => {
-          // const dateStr = d.toISOString().split("T")[0];
           const dateObj = {
             year: d.getFullYear(),
             month: d.getMonth(),
@@ -212,7 +208,7 @@ const Calendar = {
           ) {
             classes.push("today");
           }
-          // if (dateStr === today) classes.push("today");
+
           if (isWeekend) classes.push("weekend");
 
           return m(
@@ -220,12 +216,6 @@ const Calendar = {
             {
               class: classes.join(" "),
               onclick: async () => {
-                // //state.modalDate = dateStr;
-                // state.modalDate = {
-                //   year: d.getFullYear(),
-                //   month: d.getMonth(),
-                //   day: d.getDate(),
-                // };
                 state.modalDate = dateObj;
                 try {
                   const entry = await getEntry(dateObj);
@@ -237,13 +227,6 @@ const Calendar = {
                   console.error("Failed to load entry:", err);
                   state.modalText = "";
                 }
-                // // state.modalText = state.entries[dateStr] || "";
-                // state.modalText =
-                //   state.entries[
-                //     `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
-                //   ] || "";
-                // if (!entryColors[dateStr])
-                //   entryColors[dateStr] = getRandomColor();
               },
             },
             state.entries[dateKey]
@@ -256,64 +239,6 @@ const Calendar = {
     ]);
   },
 }; // Calendar component
-
-// const Modal = {
-//   view: () =>
-//     state.modalDate
-//       ? m(".modal", [
-//           // m("h3", new Date(state.modalDate).toDateString()), // correct date
-//           m(
-//             "h3",
-//             new Date(
-//               state.modalDate.year,
-//               state.modalDate.month,
-//               state.modalDate.day,
-//             ).toDateString(),
-//           ),
-//           m("textarea", {
-//             value: state.modalText,
-//             oninput: (e) => (state.modalText = e.target.value),
-//           }),
-//           m(".actions", [
-//             m(
-//               "button.entrySave",
-//               {
-//                 onclick: async () => {
-//                   const color =
-//                     entryColors[state.modalDate] || getRandomColor();
-//                   await saveEntry({
-//                     date: state.modalDate,
-//                     text: state.modalText,
-//                     color,
-//                   });
-//                   state.entries[state.modalDate] = state.modalText;
-//                   entryColors[state.modalDate] = color;
-//                   state.modalDate = null;
-//                 },
-//               },
-//               "Save",
-//             ),
-//             m(
-//               "button.entryDel",
-//               {
-//                 onclick: async () => {
-//                   await deleteEntry(state.modalDate);
-//                   delete state.entries[state.modalDate];
-//                   delete entryColors[state.modalDate];
-//                   state.modalDate = null;
-//                 },
-//               },
-//               "Delete",
-//             ),
-//             m(
-//               "button.entryClose",
-//               { onclick: () => (state.modalDate = null) },
-//               "Close",
-//             ),
-//           ]),
-//         ])
-//       : null,
-// };
 
 const Modal = {
   oninit: async () => {
@@ -427,6 +352,8 @@ const CameraAuth = {
     await initFaceAuth();
     const video = document.createElement("video");
     video.autoplay = true;
+    video.width = 260;
+    video.height = 200;
     vnode.dom.appendChild(video);
     await startCamera(video);
 
@@ -435,43 +362,46 @@ const CameraAuth = {
       state.statusMessage = "Scanning your face…";
       m.redraw();
 
-      const desc = await captureFace(video);
+      const success = await authenticate(video);
       state.loading = false;
 
-      if (desc) {
-        state.statusMessage = "Face recognized!";
-
-        if (matchFace(desc)) {
-          loginUser(video);
-        } else {
-          saveUserFace(desc);
-          loginUser(video);
-        }
-        // // stop camera after success
-        // const stream = video.srcObject;
-        // if (stream) stream.getTracks().forEach((track) => track.stop());
-        // video.remove();
+      if (success) {
+        state.statusMessage = "Access granted!";
+        loginUser(video);
       } else {
         state.authFailed = true;
-        state.statusMessage = "Could not detect. Please retry.";
-        m.redraw();
+        state.statusMessage = "Access denied. Please retry.";
+        video.classList.add("video-fail");
       }
+      m.redraw();
     }
 
     setTimeout(attemptAuth, 3000);
+
+    // Save reference so we can stop later
+    vnode.state.videoEl = video;
   },
   view: (vnode) =>
     m("div", [
       state.authFailed
-        ? m("div", [
-            m("p", state.statusMessage || "No face detected."),
+        ? m("div.retryAuthDiv", [
+            m("p", { style: "color:white" }, state.statusMessage),
             m(
               "button.retryAuthBtn",
               {
                 onclick: () => {
+                  // Stop camera stream
+                  const stream = vnode.state.videoEl?.srcObject;
+                  if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                  }
+                  vnode.state.videoEl?.remove();
+
+                  // Reset state
                   state.authFailed = false;
-                  state.authStarted = false; // reset to landing page
+                  state.authStarted = false; // back to landing page
                   state.statusMessage = "";
+
                   m.redraw();
                 },
               },
@@ -490,23 +420,170 @@ const CameraAuth = {
 
 import cameraPng from "./assets/camera.png";
 
+//===========================
+function hashPassphrase(pass) {
+  return btoa(pass); // demo hash; replace with SHA-256 for stronger security
+}
+
+const Register = {
+  oncreate: async (vnode) => {
+    await initFaceAuth();
+    const video = document.createElement("video");
+    video.autoplay = true;
+    video.width = 260;
+    video.height = 200;
+    vnode.dom.appendChild(video);
+    await startCamera(video);
+
+    vnode.state.videoEl = video;
+    vnode.state.showPass = false;
+    vnode.state.passMatch = null;
+  },
+  view: (vnode) =>
+    m("div.register-box", [
+      m("h3", "Register Face + Passphrase"),
+
+      // Passphrase input + toggle
+      m("div.passphraseDiv", [
+        m("input.passInput", {
+          type: vnode.state.showPass ? "text" : "password",
+          placeholder: "Enter passphrase",
+          oninput: (e) => {
+            state.passphrase = e.target.value;
+            const storedPass = localStorage.getItem("userPass");
+            if (storedPass && state.passphrase) {
+              const enteredHash = hashPassphrase(state.passphrase);
+              vnode.state.passMatch = storedPass === enteredHash;
+            } else {
+              vnode.state.passMatch = null;
+            }
+            m.redraw();
+          },
+          value: state.passphrase || "",
+        }),
+        m(
+          "button.togglePassBtn",
+          {
+            onclick: () => (vnode.state.showPass = !vnode.state.showPass),
+          },
+          vnode.state.showPass ? "Hide" : "Show",
+        ),
+        vnode.state.passMatch === true
+          ? m("span.passMatchIndicator success", "✔")
+          : vnode.state.passMatch === false
+            ? m("span.passMatchIndicator fail", "✖")
+            : null,
+      ]),
+
+      vnode.state.passMatch === true
+        ? m("small.helperText", "Passphrase matches stored hash.")
+        : vnode.state.passMatch === false
+          ? m("small.helperText", "Passphrase does not match stored hash.")
+          : null,
+
+      // Register button
+      m(
+        "button.registerBtn",
+        {
+          onclick: async () => {
+            state.statusMessage = "Capturing your face…";
+            m.redraw();
+
+            if (!state.passphrase) {
+              state.statusMessage = "Passphrase required.";
+              m.redraw();
+              return;
+            }
+
+            const storedPass = localStorage.getItem("userPass");
+            const enteredHash = hashPassphrase(state.passphrase);
+
+            if (storedPass && storedPass !== enteredHash) {
+              state.statusMessage = "Passphrase mismatch. Cannot overwrite.";
+              m.redraw();
+              return;
+            }
+
+            const success = await registerFace(vnode.state.videoEl);
+
+            if (success) {
+              localStorage.setItem("userPass", enteredHash);
+              state.statusMessage = "Face + passphrase registered!";
+              const stream = vnode.state.videoEl.srcObject;
+              if (stream) stream.getTracks().forEach((track) => track.stop());
+              vnode.state.videoEl.remove();
+
+              state.reRegistering = false;
+              state.passphrase = "";
+              m.redraw();
+            } else {
+              state.statusMessage = "Registration failed.";
+            }
+          },
+        },
+        "Register",
+      ),
+
+      // Cancel button
+      m(
+        "button.cancelRegisterBtn",
+        {
+          onclick: () => {
+            const stream = vnode.state.videoEl?.srcObject;
+            if (stream) stream.getTracks().forEach((track) => track.stop());
+            vnode.state.videoEl?.remove();
+
+            state.reRegistering = false;
+            state.passphrase = "";
+            state.statusMessage = "";
+            m.redraw();
+          },
+        },
+        "Cancel",
+      ),
+      m(
+        "button.clearDataBtn",
+        {
+          onclick: () => {
+            if (
+              window.confirm(
+                "Are you sure you want to clear your stored face and passphrase? This will log you out.",
+              )
+            ) {
+              // Remove stored face and passphrase
+              localStorage.removeItem("userFace");
+              localStorage.removeItem("userPass");
+
+              // Stop camera if active
+              const stream = vnode.state.videoEl?.srcObject;
+              if (stream) stream.getTracks().forEach((track) => track.stop());
+              vnode.state.videoEl?.remove();
+
+              // Reset app state
+              state.reRegistering = false;
+              state.passphrase = "";
+              state.statusMessage = "User data cleared. Logged out.";
+              state.authStarted = false; // ensures login screen shows again
+
+              m.redraw();
+            }
+          },
+        },
+        "Clear Data & Logout",
+      ),
+
+      state.statusMessage ? m("p", state.statusMessage) : null,
+    ]),
+};
+
+//=========================
+
 const Login = {
   view: () =>
     m("div.launchPageDiv", [
       m("h2", "Your Calendiary"),
-
       !state.authStarted
-        ? // ? m(
-          //     "button.startAuthBtn",
-          //     {
-          //       onclick: () => {
-          //         state.authStarted = true;
-          //         state.authFailed = false;
-          //       },
-          //     },
-          //     "Start Authentication",
-          //   )
-          m("div.camInfoDiv", [
+        ? m("div.camInfoDiv", [
             m("img.startAuthImg", {
               src: `${cameraPng}`,
               onclick: () => {
@@ -515,9 +592,26 @@ const Login = {
               },
             }),
             m("p", "Click the camera to log in"),
+            m("span", { style: "color:white" }, "--OR--"),
+            m(
+              "button.reRegisterBtn",
+              {
+                onclick: () => {
+                  if (
+                    window.confirm(
+                      "If already registered, this action will overwrite your existing face data. Proceed?",
+                    )
+                  ) {
+                    state.reRegistering = true;
+                  }
+                },
+              },
+              "Register Face",
+            ),
           ])
         : null,
       state.authStarted ? m(CameraAuth) : null,
+      state.reRegistering ? m(".register-overlay", m(Register)) : null,
     ]),
 };
 
@@ -566,26 +660,49 @@ const CalendarPage = {
             ),
           ]),
           m("button.logoutBtn", { onclick: logoutUser }, "Logout"),
+
           m(
             "button.clearDBtn",
             {
+              disabled: state.isClearing,
               onclick: async () => {
+                state.isClearing = true;
+                m.redraw();
                 if (
                   window.confirm(
                     "This action will clear the database, and delete ALL your diary entries. This action cannot be undone. Proceed?",
                   )
                 ) {
-                  await clearDB();
-                  state.entries = {};
-                  state.entryColors = {};
-                  state.modalDate = null;
-                  state.modalText = "";
-                  m.redraw();
-                  alert("Database permanently cleared.");
+                  try {
+                    await clearDB();
+
+                    // Reset local state
+                    state.entries = {};
+                    state.entryColors = {};
+                    state.modalDate = null;
+                    state.modalText = "";
+
+                    // Reload entries to sync UI
+                    const entries = await getAllEntries();
+                    state.entries = Object.fromEntries(
+                      entries.map((e) => [e.date, e.text]),
+                    );
+                    entries.forEach((e) => {
+                      entryColors[e.date] = e.color || getRandomColor();
+                    });
+
+                    m.redraw();
+                    alert("Database permanently cleared.");
+                  } catch (error) {
+                    alert(`Error clearing storage: ${error}`);
+                  } finally {
+                    state.isClearing = false;
+                    m.redraw();
+                  }
                 }
               },
             },
-            "Clear Storage",
+            state.isClearing ? "Clearing.." : "Clear Storage",
           ),
           m("img.importIcon", {
             src: `${importArrowSvg}`,
