@@ -208,6 +208,14 @@ const Calendar = {
           ) {
             classes.push("today");
           }
+          if (
+            d.getFullYear() === todayY &&
+            d.getMonth() === todayM &&
+            d.getDate() === todayD &&
+            isWeekend
+          ) {
+            classes.push("today");
+          }
 
           if (isWeekend) classes.push("weekend");
 

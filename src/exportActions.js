@@ -2,47 +2,63 @@ import { getAllEntries, saveEntry, normalizeDateKey } from "./db";
 
 export async function exportAsJSON() {
   const entries = await getAllEntries();
-  const blob = new Blob([JSON.stringify(entries, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
+  if (entries.length) {
+    console.log(JSON.stringify(entries));
+    const blob = new Blob([JSON.stringify(entries, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "diary-entries.json";
-  a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "diary-entries.json";
+    a.click();
 
-  URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
+  } else {
+    // console.log("No entries");
+    alert(`Looks like there's nothing to export!`);
+  }
 }
 
 export async function exportAsCSV() {
   const entries = await getAllEntries();
-  const header = "date,text,color\n";
-  const rows = entries.map(
-    (e) =>
-      `"${e.date}","${(e.text || "").replace(/"/g, '""')}","${e.color || ""}"`,
-  );
-  const csv = header + rows.join("\n");
+  if (entries.length) {
+    const header = "date,text,color\n";
+    const rows = entries.map(
+      (e) =>
+        `"${e.date}","${(e.text || "").replace(/"/g, '""')}","${e.color || ""}"`,
+    );
+    const csv = header + rows.join("\n");
 
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "diary-entries.csv";
-  a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "diary-entries.csv";
+    a.click();
 
-  URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
+  } else {
+    // console.log("No entries");
+    alert(`Looks like there's nothing to export!`);
+  }
 }
 
 export async function emailExport() {
   const entries = await getAllEntries();
-  const jsonData = JSON.stringify(entries, null, 2);
+  if (entries.length) {
+    const jsonData = JSON.stringify(entries, null, 2);
 
-  const subject = encodeURIComponent("My Diary Export");
-  const body = encodeURIComponent(jsonData);
+    const subject = encodeURIComponent("My Diary Export");
+    const body = encodeURIComponent(jsonData);
 
-  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  } else {
+    // console.log("No entries");
+    alert(`Couldn't find any entry to email!`);
+  }
 }
 
 // Import action from uploaded JSON file

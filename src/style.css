@@ -352,8 +352,11 @@ body {
   right: 0;
 }
 .exportDiv {
-  display: flex;
+  /* display: flex;
   justify-content: center;
+  align-items: center; */
+  position: fixed;
+  bottom: 0;
 }
 .exJson {
   background-color: #2e303a;
