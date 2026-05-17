@@ -337,12 +337,20 @@ body {
   font-size: 20px;
   background: rgb(243, 234, 206);
 }
-.day.today {
-  background: yellow;
-}
 .day.weekend {
   background: #e6ccff;
 }
+.day.today {
+  background: yellow;
+}
+.day.weekend.today {
+  background: yellow; /* explicit override */
+}
+.day:hover {
+  border: 1px solid #333;
+  cursor: pointer;
+}
+
 .day .entry-bar {
   height: 5px;
   background: teal;
