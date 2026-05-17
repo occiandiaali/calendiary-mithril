@@ -209,19 +209,10 @@ const Calendar = {
             classes.push("today");
           }
 
-          if (
-            isWeekend &&
-            d.getFullYear() === todayY &&
-            d.getMonth() === todayM &&
-            d.getDate() === todayD
-          ) {
-            classes.push("today");
-          }
-
           if (isWeekend) classes.push("weekend");
 
           return m(
-            ".day",
+            "div",
             {
               class: classes.join(" "),
               onclick: async () => {
