@@ -427,7 +427,7 @@ body {
 } */
 .modal {
   position: fixed;
-  top: 20%;
+  top: 5%;
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
@@ -435,7 +435,7 @@ body {
   padding: 20px;
   max-width: 400px;
   width: 90%;
-  height: 250px;
+  height: 420px;
   margin: 40px auto;
   text-align: center;
   display: flex;
@@ -444,14 +444,14 @@ body {
 }
 .modal textarea {
   width: 96%;
-  min-height: 100px;
+  min-height: 280px;
   resize: vertical;
   padding: 8px;
 }
 .modal .actions {
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 2px;
 }
 
 .entryDel {
@@ -460,6 +460,11 @@ body {
   border: none;
   padding: 8px;
   cursor: pointer;
+  width: 90px;
+}
+.entryDel:hover {
+  background-color: rgb(240, 137, 137);
+  color: red;
 }
 .entrySave {
   background-color: green;
@@ -467,6 +472,11 @@ body {
   border: none;
   padding: 8px;
   cursor: pointer;
+  width: 90px;
+}
+.entrySave:hover {
+  background-color: #a0e9a3;
+  color: green;
 }
 .entryClose {
   background-color: gray;
@@ -474,9 +484,14 @@ body {
   border: none;
   padding: 8px;
   cursor: pointer;
+  width: 90px;
+}
+.entryClose:hover {
+  background-color: rgb(68, 67, 67);
+  color: white;
 }
 button {
-  margin: 5px;
+  margin: 3px;
 }
 .appNameh1 {
   text-shadow: 2px 2px green;
@@ -506,8 +521,8 @@ button {
 }
 .clearDBtn:hover {
   cursor: pointer;
-  background-color: rgb(148, 121, 121);
-
+  background-color: rgb(255, 255, 255);
+  color: red;
   border: 1px solid red;
 }
 

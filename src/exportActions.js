@@ -1,4 +1,4 @@
-import { getAllEntries, saveEntry, normalizeDateKey } from "./db";
+import { getAllEntries, getEntry, saveEntry, normalizeDateKey } from "./db";
 
 export async function exportAsJSON() {
   const entries = await getAllEntries();
@@ -62,7 +62,7 @@ export async function emailExport() {
 }
 
 // Import action from uploaded JSON file
-export async function importFromJSON(file) {
+export async function importFromJSON(file, state) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 

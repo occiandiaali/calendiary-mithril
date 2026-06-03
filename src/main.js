@@ -266,6 +266,7 @@ const Modal = {
             ).toDateString(),
           ),
           m("textarea", {
+            placeholder: "It looks so lonely here. Write something..",
             value: state.modalText,
             oninput: (e) => (state.modalText = e.target.value),
           }),
@@ -359,7 +360,7 @@ const CameraAuth = {
 
     async function attemptAuth() {
       state.loading = true;
-      state.statusMessage = "Scanning your face…";
+      state.statusMessage = "Please, hold still. Scanning your face…";
       m.redraw();
 
       const success = await authenticate(video);
@@ -616,6 +617,7 @@ const Login = {
 };
 
 import importArrowSvg from "./assets/import-arrow.svg";
+import { importFromJSON } from "./exportActions";
 
 // About view
 const AboutPage = {
@@ -690,7 +692,7 @@ const CalendarPage = {
                     entries.forEach((e) => {
                       entryColors[e.date] = e.color || getRandomColor();
                     });
-
+                    state.isClearing = false;
                     m.redraw();
                     alert("Database permanently cleared.");
                   } catch (error) {
@@ -699,6 +701,9 @@ const CalendarPage = {
                     state.isClearing = false;
                     m.redraw();
                   }
+                } else {
+                  state.isClearing = false;
+                  m.redraw();
                 }
               },
             },
@@ -717,7 +722,7 @@ const CalendarPage = {
                 const file = e.target.files[0];
                 if (file) {
                   try {
-                    await importFromJSON(file);
+                    await importFromJSON(file, state);
                     alert("Import complete!");
                     m.redraw();
                   } catch (err) {

@@ -79,7 +79,9 @@ async function authenticate(videoEl) {
     alert("Access granted!");
     return true;
   } else {
-    alert("Access denied. Face does not match. Or, try registering your face.");
+    alert(
+      "Access denied. Face does not match. Perhaps you haven't yet registered your face.",
+    );
     return false;
   }
 }
