@@ -53,7 +53,9 @@
 body {
   margin: 0;
   min-width: 324px;
-  /* height: 98vh; */
+  height: 96vh;
+  /* height: auto; */
+  background-color: #ffffff;
 }
 
 .aboutPage {
@@ -62,6 +64,8 @@ body {
   justify-content: center;
   align-items: center;
   padding: 8px;
+  background-color: #f0e9f5;
+  height: 96vh;
 }
 
 .launchPageDiv {
@@ -85,6 +89,9 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+  position: relative;
+  top: 5%;
+  left: 0;
 }
 
 .aboutLink {
@@ -130,11 +137,7 @@ body {
   cursor: pointer;
   padding: 8px;
 }
-/* .registerDiv {
-  position: absolute;
-  top: 15%;
-  left: 15%;
-} */
+
 .register-overlay {
   position: fixed;
   inset: 0;
@@ -364,7 +367,7 @@ body {
   justify-content: center;
   align-items: center; */
   position: fixed;
-  bottom: 0;
+  bottom: 3%;
 }
 .exJson {
   background-color: #2e303a;
@@ -404,27 +407,11 @@ body {
 }
 .importIcon {
   position: absolute;
-  top: 9%;
+  top: 5%;
   right: 6%;
   cursor: pointer;
 }
-/* .modal {
-  position: fixed;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  padding: 20px;
-  border: 1px solid #333;
-  max-width: 400px;
-  width: 90%;
-  height: 250px;
-}
 
-.entryTextarea {
-  height: 120px;
-  width: 250px;
-} */
 .modal {
   position: fixed;
   top: 5%;
@@ -506,6 +493,7 @@ button {
   color: wheat;
   border: none;
   padding: 8px;
+  margin-top: 2%;
 }
 .logoutBtn:hover {
   cursor: pointer;
@@ -518,6 +506,7 @@ button {
   color: white;
   border: none;
   padding: 8px;
+  margin-top: 2%;
 }
 .clearDBtn:hover {
   cursor: pointer;
@@ -537,11 +526,26 @@ button {
   cursor: pointer;
 }
 
+.feedbackBtn {
+  background-color: black;
+  color: white;
+  padding: 8px;
+  width: 90px;
+  border: none;
+  cursor: not-allowed;
+}
+
 @media (max-width: 600px) {
+  .aboutLink {
+    position: absolute;
+    right: 25%;
+  }
   .appNameh1 {
     text-shadow: 1px 1px green;
     font-size: large;
-    top: 4%;
+  }
+  .headerDiv {
+    margin-top: 6%;
   }
   .session-info {
     font-size: small;
@@ -549,245 +553,8 @@ button {
   .launchPageDiv {
     margin: 25% auto;
   }
-}
-
-/* h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  .logoutBtn,
+  .clearDBtn {
+    margin-top: 15px;
   }
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
-
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-}
-
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#app {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
-} */

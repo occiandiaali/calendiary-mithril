@@ -623,10 +623,11 @@ import { importFromJSON } from "./exportActions";
 const AboutPage = {
   view: () =>
     m(".aboutPage", [
-      m("h2", "About This App"),
+      m("h2", "About Calendiary"),
       m(
         "p",
-        "This diary app lets you record daily entries, color‑code them, and export/import your data.",
+        m("strong", "Calendiary"),
+        " lets you record daily entries, color‑code them, and even export/import your data. Think of it as your digital dear-diary. All your data is stored locally, so privacy is ensured, unless you export it.",
       ),
       m(
         "a",
@@ -639,6 +640,14 @@ const AboutPage = {
         },
         "Back to Calendar",
       ),
+      m("h2", "Message us"),
+      m("textarea", {
+        disabled: true,
+        placeholder: "COMING SOON..",
+        rows: 4,
+        cols: 32,
+      }),
+      m("button.feedbackBtn", { disabled: true }, "Send"),
     ]),
 };
 
@@ -646,7 +655,7 @@ const CalendarPage = {
   view: () =>
     state.loggedIn
       ? [
-          m(SessionInfo),
+          //m(SessionInfo),
           m("div.headerDiv", [
             m("h1.appNameh1", "Calendiary"),
             m(
@@ -736,6 +745,7 @@ const CalendarPage = {
           }),
 
           m(Calendar),
+          m(SessionInfo),
           m("div.exportDiv", [
             m(".export-actions", [
               m("button.exJson", { onclick: exportAsJSON }, "Export JSON"),
